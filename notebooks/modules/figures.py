@@ -100,10 +100,23 @@ class plotfig(object):
         ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False)
         ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False)
 
+        # Ensure axis labels even if axis are shared
+        ax.xaxis.set_tick_params(labelbottom=True)
+        ax.yaxis.set_tick_params(labelleft=True)
+
         # hide 0 ticks not to overlap with axis
-        ax.xaxis.get_major_ticks()[1].label1.set_visible(False)
-        ax.yaxis.get_major_ticks()[1].label1.set_visible(False)
-        
+        xticks = [float(k.get_text().replace('−','-')) for k in ax.xaxis.get_majorticklabels()]
+        yticks = [float(k.get_text().replace('−','-')) for k in ax.yaxis.get_majorticklabels()]
+
+        ## hide x 0 conditional
+        if 0 in xticks:
+            if not (yticks.index(0)==1) :
+                ax.xaxis.get_major_ticks()[xticks.index(0)].label1.set_visible(False)
+
+        ## always hide y 0
+        if 0 in yticks:
+            ax.yaxis.get_major_ticks()[yticks.index(0)].label1.set_visible(False)
+                        
         # Annotate x and y
         xmin, xmax = ax.get_xlim() 
         ymin, ymax = ax.get_ylim()
