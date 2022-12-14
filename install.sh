@@ -11,6 +11,7 @@ where:
     -p	install pip packages from requirement.txt
     -u  remove conda environment
     -e	create environment.xml
+    -b  build docker base image
 "
 
 while [ "$1" != "" ]; do
@@ -25,6 +26,9 @@ while [ "$1" != "" ]; do
 				exit
                                 ;;
         -e | --environment )    conda env export --from-history > environment.yml
+                                exit 1
+                                ;;
+        -b | --build )          docker build -t tna76874/teachertool-base:latest -t tna76874/teachertools-base:`git rev-parse HEAD` -f Dockerfile_base .
                                 exit 1
                                 ;;
         * )                     echo "$usage" >&2
