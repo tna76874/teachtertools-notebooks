@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  notebook:
+    image: jupyter/teachertools
+    build: .
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    ports:
+      - 8888:8888
+    container_name:   jupyter_notebook
+    command: "jupyter notebook \
+      --NotebookApp.default_url=/lab/ \
+      --ip=0.0.0.0 \
+      --port=8888"
