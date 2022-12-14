@@ -78,9 +78,13 @@ class plotfig(object):
         
         return axes
 
-    def arrowed_spines(self,ax=None,idx='all',equal=False, delta=0.2):
+    def arrowed_spines(self,ax=None,idx='all',equal=False, delta=0.2, lims: list = [None, None, None, None], ceil_lims = True):
         axes = self.get_ax(ax=ax,idx=idx)
-        for ax in axes: self.arrowed_spines_for_ax(ax,delta=delta)
+        for ax in axes:
+            self.set_lims(ax,lims=lims)
+            if ceil_lims:
+                _, _, _, _ = self.ceil_lims(ax)
+            self.arrowed_spines_for_ax(ax,delta=delta)
         
         if equal: _ = [ ax.set_aspect('equal') for ax in axes ]
             
@@ -123,6 +127,32 @@ class plotfig(object):
         
         ax.annotate('x', xy=(1,0), xytext=(xmax+delta, 0), transform=ax.transAxes, ha='center', va='center')
         ax.annotate('y', xy=(0,1), xytext=(0, ymax+delta), transform=ax.transAxes, ha='center', va='center')
+    
+    def ceil_lims(self,ax):
+        xmin, xmax = ax.get_xlim() 
+        ymin, ymax = ax.get_ylim()
+
+        ax.set_xlim(np.ceil(np.abs(xmin))*np.sign(xmin), np.ceil(np.abs(xmax))*np.sign(xmax))
+        ax.set_ylim(np.ceil(np.abs(ymin))*np.sign(ymin), np.ceil(np.abs(ymax))*np.sign(ymax))
+
+        xmin, xmax = ax.get_xlim() 
+        ymin, ymax = ax.get_ylim()
+
+        return xmin, xmax, ymin, ymax
+    
+    def set_lims(self,ax, lims: list = [None, None, None, None]):
+        """
+        lims = [xmin, xmax, ymin, ymax]
+        """
+        if lims[0] != None: ax.set_xlim(left=lims[0])
+        if lims[1] != None: ax.set_xlim(right=lims[1])
+        if lims[2] != None: ax.set_ylim(bottom=lims[2])
+        if lims[3] != None: ax.set_ylim(top=lims[3])
+
+        xmin, xmax = ax.get_xlim() 
+        ymin, ymax = ax.get_ylim()
+
+        return xmin, xmax, ymin, ymax
 
     def save(self,savename: str='plot', **kwargs):
         cvars =         {
