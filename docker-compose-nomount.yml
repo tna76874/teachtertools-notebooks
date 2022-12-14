@@ -5,7 +5,7 @@ services:
     build: .
     ports:
       - 127.0.0.1:8888:8888
-    container_name:   jupyter_notebook
+    container_name:   jupyter_teachertools
     command: "jupyter notebook \
       --NotebookApp.default_url=/lab/ \
       --ip=0.0.0.0 \
