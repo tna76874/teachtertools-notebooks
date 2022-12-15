@@ -8,18 +8,50 @@ import numpy as np
 from sympy.utilities.lambdify import lambdify, implemented_function, lambdastr
 import sympy as sp
 sf = sp.sympify
+plt.rcParams['text.usetex'] = True
 
 class plotfig(object):
     def __init__(self,**kwargs):
         self.fig = None
         self.ax = None
         self.initfig(**kwargs)
+
+        self.x = sp.symbols('x', real=True)
+
+        self.X = np.linspace(-10,10,1000)
         
     def initfig(self,h=1,v=1,size=1.5,sharex=True,sharey=True,wspace = 0.2,hspace = 0.2,figsize=[6,2]):
         self.fig, self.ax = plt.subplots(v,h,sharey=sharey,sharex=sharex,figsize=tuple(np.array(figsize)*size))
         self.fig.subplots_adjust(wspace = wspace,hspace = hspace)
         try: self.ax = list(self.ax.flatten())
         except: self.ax = [self.ax]
+
+    def symplot(self, *args, **kwargs,):
+        confs = {
+                'ax'   : None, 
+                'idx'  : 0, 
+                'x'    : [-10,10,1000],
+                'lims' : [None, None, None, None],
+                'style': {},
+                }
+        confs.update(kwargs)
+        plotstyle = {
+                    #'color'     : '#1f77b4',
+                    #'marker'    : None,
+                    #'linestyle' : '-',
+                    #'linewidth' : 1,
+                    #'markersize': 5,
+                    #'clip_on'   : True,
+                    }
+        plotstyle.update(confs['style'])
+        
+        if isinstance(confs['ax'],type(None)): ax = self.ax[confs['idx']]
+        X = np.linspace(*confs['x'])
+        for f in args:
+            VARS = tuple(list(f.free_symbols))
+            f_l = lambdify(VARS,f)
+            Y = f_l(X)
+            ax.plot(X,Y,**plotstyle)
         
     def plot(self,x,y,idx=0,ax=None,xl=None,yl=None,title=None,args={}):
         if isinstance(ax,type(None)): ax = self.ax[idx]
@@ -109,8 +141,8 @@ class plotfig(object):
         ax.yaxis.set_tick_params(labelleft=True)
 
         # hide 0 tick labels not to overlap with axis
-        xticks = [float(k.get_text().replace('−','-')) for k in ax.xaxis.get_majorticklabels()]
-        yticks = [float(k.get_text().replace('−','-')) for k in ax.yaxis.get_majorticklabels()]
+        xticks = [float(k.get_position()[0]) for k in ax.xaxis.get_majorticklabels()]
+        yticks = [float(k.get_position()[1]) for k in ax.yaxis.get_majorticklabels()]
         
         # hide ticks
         ax.tick_params(left=False, bottom=False)
@@ -128,8 +160,8 @@ class plotfig(object):
         xmin, xmax = ax.get_xlim() 
         ymin, ymax = ax.get_ylim()
         
-        ax.annotate('x', xy=(1,0), xytext=(xmax+delta, 0), transform=ax.transAxes, ha='center', va='center')
-        ax.annotate('y', xy=(0,1), xytext=(0, ymax+delta), transform=ax.transAxes, ha='center', va='center')
+        ax.annotate('$x$', xy=(1,0), xytext=(xmax+delta, 0), transform=ax.transAxes, ha='center', va='center')
+        ax.annotate('$y$', xy=(0,1), xytext=(0, ymax+delta), transform=ax.transAxes, ha='center', va='center')
     
     def ceil_lims(self,ax):
         xmin, xmax = ax.get_xlim() 
