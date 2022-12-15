@@ -108,9 +108,12 @@ class plotfig(object):
         ax.xaxis.set_tick_params(labelbottom=True)
         ax.yaxis.set_tick_params(labelleft=True)
 
-        # hide 0 ticks not to overlap with axis
+        # hide 0 tick labels not to overlap with axis
         xticks = [float(k.get_text().replace('−','-')) for k in ax.xaxis.get_majorticklabels()]
         yticks = [float(k.get_text().replace('−','-')) for k in ax.yaxis.get_majorticklabels()]
+        
+        # hide ticks
+        ax.tick_params(left=False, bottom=False)
 
         ## hide x 0 conditional
         if 0 in xticks:
