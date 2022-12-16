@@ -155,14 +155,21 @@ class plotfig(object):
         ## always hide y 0
         if 0 in yticks:
             ax.yaxis.get_major_ticks()[yticks.index(0)].label1.set_visible(False)
-                        
-        # Annotate x and y
+        
+        ## hide last x and y ticks
         xmin, xmax = ax.get_xlim() 
         ymin, ymax = ax.get_ylim()
         
-        ax.annotate('$x$', xy=(1,0), xytext=(xmax+delta, 0), transform=ax.transAxes, ha='center', va='center')
-        ax.annotate('$y$', xy=(0,1), xytext=(0, ymax+delta), transform=ax.transAxes, ha='center', va='center')
-    
+        if xmax in xticks:
+            ax.xaxis.get_major_ticks()[xticks.index(xmax)].label1.set_visible(False)
+
+        if ymax in yticks:
+            ax.yaxis.get_major_ticks()[yticks.index(ymax)].label1.set_visible(False)
+        
+        # Annotate x and y        
+        ax.annotate('$x$', xy=(1,0), xytext=(xmax, -delta), transform=ax.transAxes, ha='center', va='center',fontsize=12)
+        ax.annotate('$y$', xy=(0,1), xytext=(-delta, ymax), transform=ax.transAxes, ha='center', va='center',fontsize=12)
+
     def ceil_lims(self,ax):
         xmin, xmax = ax.get_xlim() 
         ymin, ymax = ax.get_ylim()
