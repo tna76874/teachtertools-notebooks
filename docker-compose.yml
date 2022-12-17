@@ -3,6 +3,8 @@ services:
   notebook:
     image: jupyter/teachertools
     build: .
+    environment:
+     - SETUP_STATUS=testing
     volumes:
       - ./notebooks:/home/jovyan/work
     ports:

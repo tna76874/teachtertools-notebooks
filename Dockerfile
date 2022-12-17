@@ -2,6 +2,8 @@ FROM jupyter/scipy-notebook:python-3.8.13
 
 USER root
 
+ENV SETUP_STATUS="production"
+
 COPY ./docker-entrypoint.sh /
 
 ENV DEBIAN_FRONTEND=noninteractive
