@@ -15,11 +15,18 @@ class soziogramm(object):
         self.config.update(kwargs)
         
         self.names = None
+        
+        self.G = None
+        self.fig = None
+        self.cons = None
 
     def read_names(self):
-        self.names = pd.read_csv('namen.csv')
+        self.names = pd.read_csv('namen.csv', header=None)
+    
+    def save(self, format='pdf'):
+        self.fig.savefig("soziogramm."+format)
 
-    def make_soziogramm(self, save=True, format='pdf'):
+    def make_soziogramm(self, save=False, format='pdf'):
         self.read_names()
         
         pairs = list()
@@ -27,24 +34,56 @@ class soziogramm(object):
         for i in self.names.index:
             n = [k for k in self.names.loc[i,:].values if pd.notnull(k)]
             personen += n
-            pairs += [tuple(set([n[0],k])) for k in n[1:]]
-        pairs = {x:pairs.count(x) for x in pairs}
+            pairs += [tuple([k,n[0]]) for k in n[1:]]
+        weights = [ tuple(sorted(list(k))) for k in pairs]
+        weights = {x:weights.count(x) for x in weights}
         personen = list(set(personen))
-        print("In der Klasse sind {:} Personen.".format(len(personen)))
+        #print("In der Klasse sind {:} Personen.".format(len(personen)))
 
-        G = nx.Graph()
-        G.add_nodes_from(personen)
-        for k,v in pairs.items():
-            try: G.add_edge(k[0], k[1], weight=v)
-            except: pass
-        pos = nx.spring_layout(G)
+        self.G = nx.DiGraph()
+        self.G.add_nodes_from(personen)
+        edgelist = list()
+        edge_color = list()
+        edge_style = list()
+        for k in pairs:
+            edgeweight=weights[tuple(sorted(list(k)))]
+            edgelist += [tuple(k)]
+            if edgeweight>=2:
+                edge_color+=['r']
+                edge_style+=['-']
+            else:
+                edge_color+=['k']
+                edge_style+=[':']
+                
+            self.G.add_edge(k[0], k[1], weight=edgeweight)
+            
+        pos = nx.spring_layout(self.G)
 
-        fig, ax = plt.subplots(1,1,figsize=(11.69,8.27))
-        nx.draw_networkx(G, pos, with_labels=True,ax=ax, font_color='red',node_size=100, node_color="white", node_shape="s", alpha=1, linewidths=30)
+        self.fig, ax = plt.subplots(1,1,figsize=(11.69*2,8.27*2))
+        nx.draw_networkx(self.G, pos,
+                         with_labels=True,
+                         ax=ax,
+                         font_color='red',
+                         node_size=1000,
+                         node_color="white",
+                         node_shape="s",
+                         alpha=1,
+                         width=1,
+                         edgelist=edgelist,
+                         style=edge_style,
+                         edge_color=edge_color,
+                        )
+        
+        
         ax.set_aspect('equal')
         plt.box(False)
-        
-        if save: fig.savefig("soziogramm."+format)
 
-        cons = { k:len(G.edges(k)) for k in personen }
-        pd.DataFrame({'namen':cons.keys(), 'verbindungen':cons.values()}).sort_values('verbindungen',ascending=False).reset_index(drop=True)
+        if save: self.save(format=format)
+
+        cons_out = { k:len(self.G.out_edges(k)) for k in personen }
+        cons_in = { k:len(self.G.in_edges(k)) for k in personen }
+        cons_out = pd.DataFrame({'name':cons_out.keys(), 'in':cons_out.values()})
+        cons_in = pd.DataFrame({'name':cons_in.keys(), 'out':cons_in.values()})
+        cons = pd.merge(cons_in,cons_out,on='name')
+        cons['in-out'] = cons['in']-cons['out']
+        self.cons = cons.sort_values(['in-out'],ascending=[False]).reset_index(drop=True)
