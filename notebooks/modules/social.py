@@ -19,14 +19,23 @@ class soziogramm(object):
         self.G = None
         self.fig = None
         self.cons = None
+        self.clique = None
 
     def read_names(self):
         self.names = pd.read_csv('namen.csv', header=None)
     
     def save(self, format='pdf'):
         self.fig.savefig("soziogramm."+format)
-
-    def make_soziogramm(self, save=False, format='pdf'):
+        
+    def get_clique(self):
+        circles = { k : set(self.G.neighbors(k[0])).intersection(set(self.G.neighbors(k[1]))) for k in combinations(self.G.nodes,2) }
+        circles = { tuple(set(list(circles[k[0]]) + list(circles[k[1]]))):tuple(k[0]) for k in combinations(circles.keys(),2) if ((circles[k[0]]==circles[k[1]]) & (len(circles[k[0]])>=2)) }
+        circles = list(set([ tuple(set(list(k)+list(v))) for k,v in circles.items()]))
+        self.clique = circles
+        print("Cliquen:")
+        _ = [print(", ".join(list(k))) for k in circles]
+        
+    def make_soziogramm(self, save=False, format='pdf', directed=False):
         self.read_names()
         
         pairs = list()
@@ -38,24 +47,34 @@ class soziogramm(object):
         weights = [ tuple(sorted(list(k))) for k in pairs]
         weights = {x:weights.count(x) for x in weights}
         personen = list(set(personen))
-        #print("In der Klasse sind {:} Personen.".format(len(personen)))
+        print("In der Klasse sind {:} Personen.".format(len(personen)))
 
-        self.G = nx.DiGraph()
+        if directed:
+            self.G = nx.DiGraph()
+        else:
+            self.G = nx.Graph()
+        
         self.G.add_nodes_from(personen)
         edgelist = list()
         edge_color = list()
         edge_style = list()
         for k in pairs:
             edgeweight=weights[tuple(sorted(list(k)))]
-            edgelist += [tuple(k)]
-            if edgeweight>=2:
+            if (edgeweight>=2) & directed:
                 edge_color+=['r']
                 edge_style+=['-']
-            else:
+                edgelist += [tuple(k)]
+                self.G.add_edge(k[0], k[1], weight=edgeweight)
+            if (edgeweight>=2) & (not directed):
+                edge_color+=['k']
+                edge_style+=['-']
+                edgelist += [tuple(k)]
+                self.G.add_edge(k[0], k[1], weight=edgeweight)
+            elif (edgeweight<2) & directed:
                 edge_color+=['k']
                 edge_style+=[':']
-                
-            self.G.add_edge(k[0], k[1], weight=edgeweight)
+                edgelist += [tuple(k)]
+                self.G.add_edge(k[0], k[1], weight=edgeweight)
             
         pos = nx.spring_layout(self.G)
 
@@ -80,10 +99,11 @@ class soziogramm(object):
 
         if save: self.save(format=format)
 
-        cons_out = { k:len(self.G.out_edges(k)) for k in personen }
-        cons_in = { k:len(self.G.in_edges(k)) for k in personen }
-        cons_out = pd.DataFrame({'name':cons_out.keys(), 'in':cons_out.values()})
-        cons_in = pd.DataFrame({'name':cons_in.keys(), 'out':cons_in.values()})
-        cons = pd.merge(cons_in,cons_out,on='name')
-        cons['in-out'] = cons['in']-cons['out']
-        self.cons = cons.sort_values(['in-out'],ascending=[False]).reset_index(drop=True)
+        if directed:
+            cons_out = { k:len(self.G.out_edges(k)) for k in personen }
+            cons_in = { k:len(self.G.in_edges(k)) for k in personen }
+            cons_out = pd.DataFrame({'name':cons_out.keys(), 'in':cons_out.values()})
+            cons_in = pd.DataFrame({'name':cons_in.keys(), 'out':cons_in.values()})
+            cons = pd.merge(cons_in,cons_out,on='name')
+            cons['in-out'] = cons['in']-cons['out']
+            self.cons = cons.sort_values(['in-out'],ascending=[False]).reset_index(drop=True)
