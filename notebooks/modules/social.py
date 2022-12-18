@@ -24,13 +24,13 @@ class soziogramm(object):
     def read_names(self):
         self.names = pd.read_csv('namen.csv', header=None)
     
-    def save(self, format='pdf'):
-        self.fig.savefig("soziogramm."+format)
+    def save(self, format='pdf', name='soziogramm'):
+        self.fig.savefig(name+"."+format)
         
     def get_clique(self):
         self.clique = nx.find_cliques(self.G)
         print("Cliquen:")
-        _ = [print(", ".join(list(k))) for k in self.clique]
+        _ = [print(", ".join(list(k))) for k in self.clique if len(k)>1 ]
         
     def make_soziogramm(self, save=False, format='pdf', directed=False):
         self.read_names()

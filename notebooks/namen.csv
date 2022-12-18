@@ -1,6 +1,9 @@
-Hans,Peter,Ingo,Inga,Can
-Peter,Inga,Can,,
-Lena,Memeth,Can,,
-Can,Sören,Inga,,
-Maria,Inga,Can,,
-Inga,Maria,Can,,
+Hans,Peter,Ingo,Inga,Can,Memeth
+Peter,Inga,Can,Ingo,,
+Lena,Memeth,Can,Inga,Maria,
+Can,Sören,Inga,Hans,Ingo,
+Maria,Inga,Can,,,
+Inga,Maria,Can,Hans,Lena,
+Ingo,Hans,Peter,Can,,
+Sören,Can,Memeth,,,
+Memeth,Sören,Can,Maria,Hans,
