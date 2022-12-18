@@ -28,12 +28,9 @@ class soziogramm(object):
         self.fig.savefig("soziogramm."+format)
         
     def get_clique(self):
-        circles = { k : set(self.G.neighbors(k[0])).intersection(set(self.G.neighbors(k[1]))) for k in combinations(self.G.nodes,2) }
-        circles = { tuple(set(list(circles[k[0]]) + list(circles[k[1]]))):tuple(k[0]) for k in combinations(circles.keys(),2) if ((circles[k[0]]==circles[k[1]]) & (len(circles[k[0]])>=2)) }
-        circles = list(set([ tuple(set(list(k)+list(v))) for k,v in circles.items()]))
-        self.clique = circles
+        self.clique = nx.find_cliques(self.G)
         print("Cliquen:")
-        _ = [print(", ".join(list(k))) for k in circles]
+        _ = [print(", ".join(list(k))) for k in self.clique]
         
     def make_soziogramm(self, save=False, format='pdf', directed=False):
         self.read_names()
