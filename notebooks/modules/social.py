@@ -28,9 +28,17 @@ class soziogramm(object):
         self.fig.savefig(name+"."+format)
         
     def get_clique(self):
-        self.clique = nx.find_cliques(self.G)
-        print("Cliquen:")
-        _ = [print(", ".join(list(k))) for k in self.clique if len(k)>1 ]
+        self.clique = [ list(k) for k in nx.find_cliques(self.G) if len(k)>2 ]
+        in_clique = list()
+        for i in self.clique: in_clique+=i
+        in_clique = list(set(in_clique))
+        not_in_clique = [ k for k in self.G.nodes() if (k not in in_clique) ]
+        
+        print("{:} Cliquen:".format(str(len(self.clique))))
+        _ = [print(", ".join(k)) for k in self.clique ]
+        
+        if len(not_in_clique)>0: print("\n\nNicht in Cliquen:\n"+", ".join(not_in_clique))
+        
         
     def make_soziogramm(self, save=False, format='pdf', directed=False):
         self.read_names()
